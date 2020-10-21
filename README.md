@@ -143,6 +143,31 @@ kafka-topics.bat --create --zookeeper localhost:2101 --topic invoice --partition
 
 ~~~
 
+When you create a topic in Apache, you must specify **partitions** & **replication-factor**:
+
+* Partitions: In Kafka, a single topic may store millions of messages. Is not practical to keep all this messages in a single file. Topic partitions are a mechanism to break the file into smaller parts (partitions). For Apache Kafka is nothing but a **physical directory**. Creates a separate director for each Topic Partition. If Partitions==5, Kafka will create 5 folders for the Topic Invoice. 
+
+* Replication Factor: Specifies **Number of Copies for each Partition**. Number of Replicas (15) = Partitions (5) * Replication-Factor (3). Kafka will create 15 directories for the Topic Invoice created. 
+
+After the creation of the Invoice Topic with --partitions 5 --replication-factor 3, we will have this distributions in the Apache Kafka HOME_DIRECTORY:
+
+* kafka-log-0
+   * invoice-0
+   * invoice-1
+   * invoice-2
+   * invoice-3
+   * invoice-4
+* kafka-log-1
+   * invoice-0
+   * invoice-1
+   * invoice-2
+   * invoice-3
+* kafka-log-2
+   * invoice-0
+   * invoice-1
+   * invoice-2
+   * invoice-3
+* zookeeper-data
 
 
 
