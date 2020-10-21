@@ -73,16 +73,20 @@ Allows to create and execute connections between topics of producers and consume
 * Real-time Stream Processing Challenges:
  * Many-to-Many relationships becomes a **Stream Mash**. One Producer is sending events to a lot of consumers - they send to a Event Bus. The consumers also consuming events  from a lot of Producers
  * With Real-time Streaming, we need to deliver:
- ** Time sensitivity
- ** Decoupling
- ** Data format evolution
- ** Reliability (Fault-tolerant, checkpoints)
+ * 1. Time sensitivity
+ * 2. Decoupling
+ * 3. Data format evolution
+ * 4. Reliability (Fault-tolerant, checkpoints)
  * 5. Scalability
 * A good design to achieve this is using **Publish/Subscriber** Design:
+
+#### Publish/Subscriber Design With Broker and Topic (Log File)
+
  * **Publisher** - application that sends events
  * **Subscriber** - appplications that consume events sent by the Publisher
  * **Broker** - Main point of a Publisher/Subscriber system. The heart of the Publisher/Subscriber system; Sits in the middle of Publishers and Subscribers; Broker is responsible for receiving the messages from a Publisher (Producer), storing in a LogFile and sending it to the Subscribers (Consumers); Any application that wants to send a message should send it to the broker. Broker receives the message, sends its aknowledge and persists the data into a **log file**. When consumer application wants to read the message, it consume it from the broker; 
  * **Topic** - Is **message namespace**. Offer mechanismo to categorize the messages. You can think of the topic is a TABLE_NAME if you think the broker as a database. Producer always writes the message to a topic and consumer reads it from the topic. Broker creates a **log file for each topic**. The broker maintains multiple topics like a database that maintains many table. When producer sends a message, it defines the topic name for the message and the broker persists the message in the corresponding log file. 
+
 
 
 
