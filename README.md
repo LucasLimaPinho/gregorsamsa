@@ -117,13 +117,31 @@ Apache Kafka Architecture:
 
 Architecture | Importance
 ------------ | -----------
-Kafka _Storage_ Architecture | This topic will help understand what is replication factor, offset, offset index, logs and partitions.
-Kafka _Cluster_ Architecture | THis topic will help understand concepts associated with Cluster formation, ZooKeeper e Controller.
-Kafka _Distribution_ Architecture | Tie up Storage and Cluster Architecture and understand how the work is distributed. Concepts as leaders, followers, commited and uncommited messages
+Kafka **Storage** Architecture | This topic will help understand what is replication factor, offset, offset index, logs and partitions.
+Kafka **Cluster** Architecture | THis topic will help understand concepts associated with Cluster formation, ZooKeeper e Controller.
+Kafka **Distribution** Architecture | Tie up Storage and Cluster Architecture and understand how the work is distributed. Concepts as leaders, followers, commited and uncommited messages
 
 
 #### Kafka Storage Architecture
 
+Topic is a logical name to group your messages. Broker defines a log file to each Topic to store the messages. However, this log files are **partitioned, replicated and segmented**. You must define a HOME_DIRECTORY (tmp) for the Kafka Brokers. That means that everything that my Kafka Brokers are going to create will reside in this HOME_DIRECTORY. This makes things easier to understand what is happening under the hood.
+
+In the HOME_DIRECTORY for the Apache Kafka Brokers (in our case, we are working with 03 brokers), we will have:
+
+* kafka-log-0
+* kafka-log-1
+* kafka-log-2
+* zookeeper-data
+
+When a Broker starts, it will create some initial files. Most of the files will be empty at the beggining. 
+
+Command Line to create a topic:
+
+~~~bat
+
+kafka-topics.bat --create --zookeeper localhost:2101 --topic invoice --partitions 5 --replication-factor 3
+
+~~~
 
 
 
