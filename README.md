@@ -78,6 +78,11 @@ Allows to create and execute connections between topics of producers and consume
  * 3. Data format evolution
  * 4. Reliability (Fault-tolerant, checkpoints)
  * 5. Scalability
+* A good design to achieve this is using **Publish/Subscriber** Design
+ * Publisher - application that sends events
+ * Subscriber - appplications that consume events sent by the Publisher
+ * Broker - Main point of a Publisher/Subscriber system. The heart of the Publisher/Subscriber system; Sits in the middle of Publishers and Subscribers
+ * Topic
 
 
 
