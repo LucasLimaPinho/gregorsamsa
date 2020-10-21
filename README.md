@@ -117,7 +117,6 @@ Apache Kafka Architecture:
 
 Architecture | Importance
 ------------ | -----------
-
 Kafka _Storage_ Architecture | This topic will help understand what is replication factor, offset, offset index, logs and partitions.
 
 Kafka _Cluster_ Architecture | THis topic will help understand concepts associated with Cluster formation, ZooKeeper e Controller.
