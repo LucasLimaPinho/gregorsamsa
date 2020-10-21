@@ -128,10 +128,29 @@ Topic is a logical name to group your messages. Broker defines a log file to eac
 
 In the HOME_DIRECTORY for the Apache Kafka Brokers (in our case, we are working with 03 brokers), we will have:
 
-* kafka-log-0
-* kafka-log-1
-* kafka-log-2
-* zookeeper-data
+* KAFKA_HOME_DIRECTORY
+  * kafka-log-0
+      * .lock
+      * cleaner-offset-checkpoint
+      * log-start-offset-checkpoint
+      * meta.properties
+      * recover-point-offset-checkpoint
+      * replication-offset-checkpoint
+  * kafka-log-1
+      * .lock
+      * cleaner-offset-checkpoint
+      * log-start-offset-checkpoint
+      * meta.properties
+      * recover-point-offset-checkpoint
+      * replication-offset-checkpoint
+  * kafka-log-2
+      * .lock
+      * cleaner-offset-checkpoint
+      * log-start-offset-checkpoint
+      * meta.properties
+      * recover-point-offset-checkpoint
+      * replication-offset-checkpoint
+  * zookeeper-data
 
 When a Broker starts, it will create some initial files. Most of the files will be empty at the beggining. 
 
@@ -151,23 +170,42 @@ When you create a topic in Apache, you must specify **partitions** & **replicati
 
 After the creation of the Invoice Topic with --partitions 5 --replication-factor 3, we will have this distributions in the Apache Kafka HOME_DIRECTORY:
 
-* kafka-log-0
-   * invoice-0
-   * invoice-1
-   * invoice-2
-   * invoice-3
-   * invoice-4
-* kafka-log-1
-   * invoice-0
-   * invoice-1
-   * invoice-2
-   * invoice-3
-* kafka-log-2
-   * invoice-0
-   * invoice-1
-   * invoice-2
-   * invoice-3
-* zookeeper-data
+* KAFKA_HOME_DIRECTORY
+  * kafka-log-0
+     * invoice-0
+     * invoice-1
+     * invoice-2
+     * invoice-3
+     * invoice-4
+        * .lock
+        * cleaner-offset-checkpoint
+        * log-start-offset-checkpoint
+        * meta.properties
+        * recover-point-offset-checkpoint
+        * replication-offset-checkpoint
+  * kafka-log-1
+     * invoice-0
+     * invoice-1
+     * invoice-2
+     * invoice-3
+        * .lock
+        * cleaner-offset-checkpoint
+        * log-start-offset-checkpoint
+        * meta.properties
+        * recover-point-offset-checkpoint
+        * replication-offset-checkpoint
+  * kafka-log-2
+     * invoice-0
+     * invoice-1
+     * invoice-2
+     * invoice-3
+        * .lock
+        * cleaner-offset-checkpoint
+        * log-start-offset-checkpoint
+        * meta.properties
+        * recover-point-offset-checkpoint
+        * replication-offset-checkpoint
+  * zookeeper-data
 
 
 
