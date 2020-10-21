@@ -103,6 +103,34 @@ Scalability: Offered by Kafka Architecture and is designed; Kafka is distributed
  * **Broker** - Main point of a Publisher/Subscriber system. The heart of the Publisher/Subscriber system; Sits in the middle of Publishers and Subscribers; Broker is responsible for receiving the messages from a Publisher (Producer), storing in a LogFile and sending it to the Subscribers (Consumers); Any application that wants to send a message should send it to the broker. Broker receives the message, sends its aknowledge and persists the data into a **log file**. When consumer application wants to read the message, it consume it from the broker; 
  * **Topic** - Is **message namespace**. Offer mechanismo to categorize the messages. You can think of the topic is a TABLE_NAME if you think the broker as a database. Producer always writes the message to a topic and consumer reads it from the topic. Broker creates a **log file for each topic**. The broker maintains multiple topics like a database that maintains many table. When producer sends a message, it defines the topic name for the message and the broker persists the message in the corresponding log file. 
 
+#### Enter the World of Apache Kafka
+
+Apache Kafka _Broker Responsibilities_:
+
+* _Receive_ messages from the producers and acknowledge the successful receipt;
+
+* _Store_ the messages in a log file to safeguard it from potential loss;
+
+* _Deliver_ the messages to the consumers when they request it;
+
+Apache Kafka Architecture:
+
+Architecture | Importance
+------------ | -----------
+
+Kafka _Storage_ Architecture | This topic will help understand what is replication factor, offset, offset index, logs and partitions.
+
+Kafka _Cluster_ Architecture | THis topic will help understand concepts associated with Cluster formation, ZooKeeper e Controller.
+
+Kafka _Distribution_ Architecture | Tie up Storage and Cluster Architecture and understand how the work is distributed. Concepts as leaders, followers, commited and uncommited messages
+
+
+#### Kafka Storage Architecture
+
+
+
+
+
 
 
 
