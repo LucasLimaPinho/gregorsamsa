@@ -37,7 +37,7 @@ Schema Registry REST API: 8081
 
 * O Kafka was originnaly developed by LinkedIn
 * Open-source distributed Streaming platform;
-* You can **sign** e **publish** registrys/events
+* You can **sign** & **publish** registrys/events
   * Real-time Processing, or;
   * Storage (Fault-Tolerant);
 * Kafka can't be called only as a *Mensageria* due to its capacity of storage - distributed streaming platform;
