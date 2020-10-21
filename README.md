@@ -207,6 +207,53 @@ After the creation of the Invoice Topic with --partitions 5 --replication-factor
         * replication-offset-checkpoint
   * zookeeper-data
 
+All the 15 Partitions created for Invoice Topic are part of the same topic but are **distributed** along the available brokers. This directories are there to give home to log files where the messages are stored. We can classify Topic Partition Replicas into two categories:
+
+* Leader Partitions: The first five directories created for Invoice Topic. The Leaders are created first.
+
+* Follower Partitions: Two more Follower Partitions for each Leader Partition with --replication-factor 3. The follower is a duplicate copy of the leader. They are directories. 
+
+Command to descibre a Kafka topic and discover where the leaders/followers directories reside:
+
+~~~bat
+
+kafka-topics.bat --describe -zookeeper localhost:2101 --topic invoice
+
+~~~
+
+* Log Segments and Maximum Segment Limit (1GB or 1 Week Of Data by default)
+
+Instead of creating a huge file in the Leader/Follower Replica Directory, Kafka created **Log Segments**. When the partition receives it first messages, it stores the message in the first segment. The next message also goes in the same segment. The segment will grow untill the **maximum segment limit** is reached. If the limit is reached, it closed the file and starts a new segment. The default maximum segment size is **either 1GB of data or week of data**.
+
+* Message Offsets -64-bit integer that uniquely identify each message in a Partition. They are not unique across the topic.
+
+Each message in a partition is **uniquely indentified by a 64-bit integer OFFSET**. Every Kafka message within a partition is uniquely identified by the offset. The offset of the first message would be 0000, the second message 0001, and so on. _The numbering also keeps ACROSS THE SEGMENTS to keep the offset unique within the partition_. If the offset of the last message of the first segment is 30652 and the maximum segment limit is reached. Kafka will close the segment file and open a new log segment - _the first message in the new segment should be 30653 to keep the offset unique within the partition_. **To make identification easier, the segment file name is also suffixed by the first offset in that segment**.
+
+Offsets are not unique across the topic. So if you want to look for a specific message, you'll need three things:
+
+1. Topic Name
+2. Partition Number
+3. Offset Number
+
+Only the offset number and topic name will not be enough because the offset is not unique across the topic. Message Offset is unique across the partition. The consumer application requests messages based on the message offset. Kafka allow consumers to start fetching messages from a giving offset number - this means that if the consumer demands for messages beggining at offset 100, the broker must be able to locate the message for offset 100.
+
+* .index (offset)
+To help brokers rapidly find the message for a given offset, Kafka maintains an **index of offsets**. The index files are also segmented for easy management, and they are also stored in the partition directory along with the log file segment. 
+
+* .timeindex:
+
+Kafka allows consumers to start fetching messages based on the offset number. However, in many use cases, you might want to seek messages based on timestamp. These requirements are as straightforward as you want to read all the events that are created after a specific timestamp. To support such needs, Kafka also maintains a timestamp for each message, builds a time index to quickly seek the first message that arrived after the given timestamp. The time index is like the offset index and is also segmented and stored in the partition directory along with the offset index.
+
+
+
+
+
+
+
+
+
+
+
 
 
 
