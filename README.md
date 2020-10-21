@@ -9,9 +9,13 @@
 #### Dependencies
 
 [Java 8](https://www.oracle.com/br/java/technologies/javase/javase-jdk8-downloads.html)
+
 [Maven Project](https://maven.apache.org/guides/getting-started/)
+
 [IntelliJ Idea Community Edition](https://www.jetbrains.com/pt-br/idea/download/)
+
 [JUnit Framework](https://junit.org/junit4/)
+
 [Apache Log4j](https://logging.apache.org/log4j/2.x/)
 
 ### Ports
