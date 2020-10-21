@@ -18,7 +18,7 @@
 
 Zookeeper port: 2181
 
-KApache Kafka Brokers: 9092
+Apache Kafka Brokers: 9092
 
 Confluent Control Center: 9021
 
