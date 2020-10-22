@@ -311,6 +311,77 @@ Summarizing: Zookeeper is the database of the Kafka Cluster control information 
 
 #### Kafka Work Distribution Architecture - Tie up relationships between Storage Architecture & Cluster Architecture.
 
+Kafka Cluster is a group of Brokers - these brokers may be running on individual machines. In a large production cluster, you might have organized these machines in multiple racks. 
+
+_How are the partitions allocated to brokers? How we decide which broker should be maintaining which partition? Are there any rules to assign worker between brokers?_
+
+Suppose you have 6 brokers running in 2 racks.
+
+Rack | Brokers
+---- | -------
+Rack 1 | B0, B1, B2
+Rack 2 | B3, B4, B5
+
+You have a topic with --partitions 10 and --replication-factor 3 (Number Of Replicas (30) = Partitions (10) * Replication Factor (3))
+
+Kafka now have 30 replicas to allocate to 6 brokers. Kafka tries to achieve **two goals** for this partition allocation:
+
+1. **Event Distribution**: Partitions are distributed evenly as much as possible to achieve workload balance. 
+
+2. **Fault-Tolerance**: Followed Partitions should be placed in different machines to achieve fault-tolerance.
+
+To distribute the 30 replicas, Kafka makes the following steps:
+
+* Make a ordered list of available brokers: Kafka begins with a randomly chosen broker in a rack and places it into a list (Rack 1 - Broker 0, per example). The next broker in the list must be from a different rack (Rack 2 - Broker 3, per example). The next one again comes from the first rack (Rack 1 - Broker 1, per example). This goes on as an alternating process for selecting another broker in a different rack. Example of ordered list achieved by this process:
+
+- [x] R1-BO
+
+- [x] R2-B3
+
+- [x] R1-B1
+
+- [x] R2-B4
+
+- [x] R1-B2
+
+- [x] R2-B5
+
+The second step is assign partitions to this list. We have 30 partitions replicas to create to these six brokers. Ideally, Kafka should place five partitions on each broker to achieve the first goal of evenly distributing the partitions. However, we have another goal to achieve fault-tolerance (if a broker fails for some reason, we need to have a copy on other broker).
+
+Further, we need to make sure that if a entire rack fails, we still have a copy on a different rack. 
+
+* Assign Leaders and Followers to the list in order
+
+Per example, the first partition (--partition 10) has 03 copies (--replication-factor 3): all we need to do is to make sure that those three copies are not allocated to the same broker in the ordered list above.
+
+Once we have the ordered list of available brokers, assigning partitions is as simple as assign one to each broker using a round robin method. Kafka starts with the leader partitions and finishes creating all leaders first.
+
+So, we take the leader of Partition 0 (P0) and assign it to Broker 0 (R1-B0).
+
+The leader of Partition 1 (P1) goes to Broker 3 (R2-B3) - second in the ordered list.
+
+The leader of Partition 2 (P2) goes to Broker 1 (R1-B1) - third in the ordered list. 
+
+The leader of Partition 3 (P3) goes to Broker 4 (R2-B4) - fourth in the ordered list.
+
+The leader of Partition 4 (P4) goes to Broker 2 (R1-B2) - fifth in the ordered list.
+
+The leader of Partition 5 (P5) goes to Broker 5 (R2 - B5) - sixth in the ordered list. So it goes assigning the Partitions Leaders first assuming the ordered list ...
+
+The leader of Partition 6 (P6) goes to Broker 0 (R1-B0) - first in the ordered list since we only have 6 brokers; less than the number of partitions leaders;
+
+The leader of Partition 7 (P7) goes to Broker 3 (R2-B3) - second in the ordered list since we only have 6 brokers; less than the number of partitions leaders;
+
+The leader of Partition 8 (P8) goes to Broker 1 (R1-B1) - third in the ordered list since we only have 6 brokers; less than the number of partitions leaders;
+
+The leader of Partition 9 (P9) goes to Broker 4 (R2-B4) - fourth in the ordered list since we only have 6 brokers; less than the number of partitions leaders;
+
+
+
+
+
+
+
 
 
 
