@@ -580,7 +580,8 @@ public class HelloProducer {
 
     }
     
-    producer.close()
+    logger.info("Finished sending messages.");
+    producer.close();
         
 ~~~
 
