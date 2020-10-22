@@ -427,7 +427,29 @@ This list is known as the ISR list of the partition and persisted in the Zookeep
 
 The first request from a follower would ask the leader to send messages starting from the offset zero. Let's assume that the leader received request for 10 messages (0-9) and them wired them to the follower. Then, the follower will perform another request starting from offset 10 - in this case, since the follower asked for offset 10, that means a leader can safely assume that the follower has already persisted all the earlier messages.
 
-´´´So, by looking at the last offset request by the follower, the leader can tell how far behind is the replica.´´´
+_So, by looking at the last offset request by the follower, the leader can tell how far behind is the replica._
+
+Now the ISR List is easy to maintain if the replica is "Not too Far" from the Leader. The ISR list is dynamic.
+
+How do we define "not too far""? The follower will always be a little far from the leader because followers needs to ask for the message from the leader, receive the message from the network, persist in the replica and then ask for more message with another offset. This takes time. The leader gives them some minimum time as a margin to accomplish this. **The default value of "not too far" is 10 seconds**. You can increase or decrease using Kafka configurations.
+
+If the replica has requested the most recent message in the last 10 seconds, it deserves to be in the ISR List persisted in Zookeeper.
+
+The logical of maintaning a ISR List in Zookeeper leads to other two concepts in case the ISR List is logically empty and we don't have any broker to assume the role as leader with the leader crashes - all followers are lagging behind the leader by 11 seconds, per example.
+
+This concepts that arise from ISR List persisted in Zookeeper are:
+
+* Commited _versus_ Uncommited Messages
+
+You can configure your leader to not consider a message **commited** until it is copied to all of the followers in the ISR List. If you do that, the leader may have some commited and some uncommited messages. If the message is commited, we cannot lose it until we loose all the replicas.
+
+However, if we lose the Leader, we still miss the uncommited messages. The uncommited messages shouldn't be a worry because those can be resent by the producer. Producers can choose to receive acknowledgments of sent messages **only after the message is fully commited**. In that case, the producer waits for the acknowledgement for a timeout period and resend the messages in the absence of commit acknowledgment. So, the uncommited messages are lost at the failing leader, but the newly elected leader will receiver these again from the producer.
+
+That's how all the messages can be protected from loss.
+
+* Minimum Number of In-Sync Replicas: protects Kafka from a scenario where the ISR list is logically empty because the brokers failed. In this case, the messages are going to be considered commited if we only have the leader by itself - the messages were copied to all copies of the ISR List (0, for the moment). This scenario is very risky for data consistency, since we are going to lose data if the leader broker fails. That's why Kafka came out with the concept of **Minimun Number of In-Sync Replicas**.
+
+If you would like to be sure that commited data is written to at least two replicas, you need to set the minimum number of in-sync replicas as two. There is side effect to this approach. Consider that a topic has 3 replicas and you set a minimum of In-Sync replicas as two, then you can only write to a partition in the topic if at least two of the three replicas are in sync. The leader will practically become a "read-only" partition and will throw a "Not Enough Replicas" exception. 
 
 
 
