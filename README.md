@@ -309,7 +309,9 @@ If a broker that is a controller dies and then gets back again, he will not reas
 
 Summarizing: Zookeeper is the database of the Kafka Cluster control information and one of the broker is elected to take the responsibilies as a controller to monitor Zookeeper. The controller maintains his activities of a normal broker.
 
-#### Kafka Work Distribution Architecture 
+#### Kafka Work Distribution Architecture - Tie up relationships between Storage Architecture & Cluster Architecture.
+
+
 
 
 
