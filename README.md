@@ -354,7 +354,7 @@ Further, we need to make sure that if a entire rack fails, we still have a copy 
 
 Per example, the first partition (--partition 10) has 03 copies (--replication-factor 3): all we need to do is to make sure that those three copies are not allocated to the same broker in the ordered list above.
 
-Once we have the ordered list of available brokers, assigning partitions is as simple as assign one to each broker using a round robin method. Kafka starts with the leader partitions and finishes creating all leaders first.
+Once we have the ordered list of available brokers, assigning partitions is as simple as assign one to each broker using a **round robin** method. Kafka starts with the leader partitions and finishes creating all leaders first.
 
 So, we take the leader of Partition 0 (P0) and assign it to Broker 0 (R1-B0).
 
@@ -394,6 +394,42 @@ R1-B1 | P2, P8 | P1, P7 | P0, P6
 R2-B4 | P3, P9 | P2, P8 | P1, P7
 R1-B2 | P4     | P3, P9 | P2, P8
 R2-B5 | P5     | P4     | P3, P9
+
+This is what happens when you create a topic. Leaders and Followers of the topic are created across the cluster. If you look at the allocation, we couldn't achieve a perfect even distribution. The Broker 0 has got 4 partitions, while Broker 4 has six partitions. However, we made an ideal fault-tolerance at the price of little disparity.
+
+* Kafka Work Distribution Architecture Part 2 - Defining Roles for Broker
+
+Partitions can be: Leaders or Followers.
+
+Brokers also can act as: Leaders or Followers.
+
+For a Broker to act as a Leader means one thing: **the leader is responsible for all the request from the producers and consumers**.
+
+If the Producer wants to send a message to a Kafka Topic, it will connect to one of the brokers in the cluster and query for the topic metadata. All Kafka brokers can answer a metadata request and hence the producer can connect to any of the brokers and query for the metadata. The metadata contains a list of all the leader partitions **and their respective host and port information**. _So, every broker in the cluster has a topic metadata with host and port to each leader partition._
+
+After querying the metadata, now the producer has a list of all leaders. It is the producer that decides on which partition does it want to send the data and accordingly send the message to the respective broker. That means, the producer directly transmits the message to a leader. 
+
+On receiving the message, the leader broker persists the message in the leader partition and sends back an ackowledgement. 
+
+Similarly, when a consumer wants to read messages it connects to any of the brokers in the cluster - they all have topic metadata with the list of all leader partitions and their respective hosts and port. Containing the list of all leader partitions, the consumer chooses from which partitions it wants to read a message and sends the request to the leader. 
+
+The producer and the consumer always interact with the leader broker.
+
+What about the follower? Kafka Brokers also act as a follower to the follower partitions allocated to the broker. The Broker B4 acts as a follower broker for the partitions P2, P8, P1 & P7 (you can see the table above).
+
+Followers do not serve producers and consumer requests - their only job is to copy messages from leader and stay up-to-date with all the messages. The aim of the follower is to get elected as Leader if the leader broker fails. They have a single-point agenda: stay in sync with the Leader because they may assume this role at any time.
+
+To stay in sync with the leader, the follower connects with the leader and requests for the data. This goes on forever as an infinite loop to ensure that the followers are in sync with the leader - this is called the **Follower Thread**. 
+
+As followers can fall behind the leader due to network congestion or broker failures, the leader has another important job that is to maintain a list of **In-Sync-Replicas (ISR)**.
+
+This list is known as the ISR list of the partition and persisted in the Zookeeper and this list is maintained by the leader broker. The **ISR List is very critical** because all of the followers in that list are known to be in sync with the leader and are candidate to become leaders if something goes wrong with the leader broker.
+
+The first request from a follower would ask the leader to send messages starting from the offset zero. Let's assume that the leader received request for 10 messages (0-9) and them wired them to the follower. Then, the follower will perform another request starting from offset 10 - in this case, since the follower asked for offset 10, that means a leader can safely assume that the follower has already persisted all the earlier messages.
+
+´´´So, by looking at the last offset request by the follower, the leader can tell how far behind is the replica.´´´
+
+
 
 
 
