@@ -18,6 +18,7 @@
 
 [Apache Log4j](https://logging.apache.org/log4j/2.x/)
 
+
 ### Ports
 
 Zookeeper port: 2181
@@ -453,8 +454,12 @@ If you would like to be sure that commited data is written to at least two repli
 
 #### Three Node Kafka on a Local Machine - Setting Up an Environment
 
+KAFKA_HOME environment variable should be ponting to the directory you have your uncompressed Kafka files;
+
+Include KAFKA_HOME/bin/windows in the PATH Environment Variable;
 
 
+How to configure the folder which your KAFKA will create the partitions? This /tmp folder should reside in your project directory. log.dir in server.properties is the place where the Kafka broker will store the commit logs containing your data.
 
 
 
