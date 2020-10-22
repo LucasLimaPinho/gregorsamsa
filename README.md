@@ -469,12 +469,15 @@ Important command-lines
 ##### Command Line to Start Brokers
 
 # Broker 0
+
 kafka-server-start.bat %KAFKA_HOME%\config\server-0.properties
 
 # Broker 1
+
 kafka-server-start.bat %KAFKA_HOME%\config\server-1.properties
 
 # Broker 2
+
 kafka-server-start.bat %KAFKA_HOME%\config\server-2.properties
 
 # Create a topic
@@ -483,6 +486,7 @@ kafka-topics.bat --create --zookeeper localhost:2181 --topic hello-producer-topi
 
 
 # Start a Topic Consumer
+
 kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic hello-producer-topic --from-beginning
 
 # Start zookeeper
