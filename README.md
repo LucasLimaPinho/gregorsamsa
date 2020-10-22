@@ -245,8 +245,65 @@ To help brokers rapidly find the message for a given offset, Kafka maintains an 
 
 Kafka allows consumers to start fetching messages based on the offset number. However, in many use cases, you might want to seek messages based on timestamp. These requirements are as straightforward as you want to read all the events that are created after a specific timestamp. To support such needs, Kafka also maintains a timestamp for each message, builds a time index to quickly seek the first message that arrived after the given timestamp. The time index is like the offset index and is also segmented and stored in the partition directory along with the offset index.
 
+#### Kafka Cluster Architecture
 
+Scalability side of Apache Kafka and how Kafka Cluster is formed. Kafka Brokers are configured to form a **cluster of various Kafka Brokers: group of Brokers that work together to share the workload and that's how Apache Kafka becomes a distributed and scalable system**.
 
+As the workload grows, you can increase the number of BROKERS in the cluster. 
+
+* _Who Manages Cluster Membership_? **Zookeeper**
+
+In a typical distributed system, there is a master node that maintains a list of active cluster members. The master always know the state of other members. 
+
+If a broker dies, we need someone to reassign that work to an active broker to ensure that the cluster continues to function.
+
+**Kafka Broker is a master-less cluster**. It does not follow a master-slave architecture. However, it uses **Apache Zookeeper** to maintain the list of active brokers. Every Kafka Broker has a unique id that you define in the broker configuration file. We also specify the Zookeeper connection details in the broker configuration file. 
+
+When the broker starts, it connects to the Zookeeper and creates an ephemeral node using broker_id to represent an active Broker session. The ephemeral node remains intact as longs as the broker session with the Zookeeper is active. When a broker looses connectivity to Zookeeper for some reason, the Zookeeper automatically removes that ephemeral node.
+
+So, the list of active brokers in the cluster is maintaned as the list of ephemeral nodes under the **broker/ids path in the Zookeeper**. 
+
+You can start the Zookeeper shell with this command:
+
+~~~sh
+
+zookeeper-shell.bat localhost:2181
+
+~~~
+
+With this, we are connected to the **Zookeeper in my Kafka cluster**. We can easily look what we have in the Zookeeper database inside the Zookeeper shell with the ls command.
+
+~~~sh
+
+# Check brokers inside Zookeeper shell
+
+ls /brokers
+
+# IDS of the brokers that are active in this Kafka Cluster (The list of active nodes in the cluster that in common clusterized architectures are managed by the master, but Kafka is master-less and has a Zookeeper)
+
+ls /brokers/ids
+
+~~~
+
+* _Who perform the routine Administrative Tasks in the cluster - Who's gonna clean Gregor Samsa's room_? **Controller - a normal Broker elected to it**
+
+This activities are also typically performed by a master in a clustered environment. 
+
+The activities of monitoring the list of active brokers and reassingn tasks when a broker enters/leaves the cluster is done by a Cluster **Controller**.
+
+The controller is not a master - it is simply a **broker that is elected as a controller to take up some extra responsibilities**.
+
+That means that controller **also acts as a regular broker**. So, if you have a single node cluster, it serves as a controller as well as a broker.  However, the is only one controller in the Kafka Cluster at any point in time. The controller is responsible for monitoring the list of active brokers in the Zookeeper. When the controller notices that a broker left the cluster, it knows it is time to reassign some work to other brokers. 
+
+The controller election is straightforward. The first broker that starts the cluster becomes the controller creating a ephemeral node in the Zookeeper. When other brokers start, they also try to create an ephemeral controller node in Zookeeper, but they receive an exception as "node already exists" - the controller is already elected. When the controller dies, the ephemeral node in zookeeper disappears. Now every broker tries to create an ephenmeral controller node in Zookeeper, but only one suceeds - there is always a controller in the cluster and **only one**.
+
+~~~sh
+
+# In Zookeeper shell:
+
+get /controller
+
+~~~
 
 
 
