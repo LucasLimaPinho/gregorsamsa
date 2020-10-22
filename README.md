@@ -451,7 +451,7 @@ That's how all the messages can be protected from loss.
 
 If you would like to be sure that commited data is written to at least two replicas, you need to set the minimum number of in-sync replicas as two. There is side effect to this approach. Consider that a topic has 3 replicas and you set a minimum of In-Sync replicas as two, then you can only write to a partition in the topic if at least two of the three replicas are in sync. The leader will practically become a "read-only" partition and will throw a "Not Enough Replicas" exception. 
 
-
+#### Three Node Kafka on a Local Machine - Setting Up an Environment
 
 
 
