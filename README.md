@@ -458,8 +458,48 @@ KAFKA_HOME environment variable should be ponting to the directory you have your
 
 Include KAFKA_HOME/bin/windows in the PATH Environment Variable;
 
-
 How to configure the folder which your KAFKA will create the partitions? This /tmp folder should reside in your project directory. log.dir in server.properties is the place where the Kafka broker will store the commit logs containing your data.
+
+You should **delete the /tmp** folder defined between sequence runs.
+
+Important command-lines
+
+~~~bat
+
+##### Command Line to Start Brokers
+
+# Broker 0
+kafka-server-start.bat %KAFKA_HOME%\config\server-0.properties
+
+# Broker 1
+kafka-server-start.bat %KAFKA_HOME%\config\server-1.properties
+
+# Broker 2
+kafka-server-start.bat %KAFKA_HOME%\config\server-2.properties
+
+# Create a topic
+
+kafka-topics.bat --create --zookeeper localhost:2181 --topic hello-producer-topic --partitions 5 --replication-factor 3
+
+
+# Start a Topic Consumer
+kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic hello-producer-topic --from-beginning
+
+# Start zookeeper
+
+zookeeper-server-start.bat %KAFKA_HOME%\config\zookeeper.properties
+
+~~~
+
+#### Creating Real-Time Streams
+
+At high-level, there are two methods of bringing data into Apache Kafka
+
+1. Kafka Producer APIs: send the event records to the Kafka Broker also changing the old application that used to send the records only to a Database; THe event is persisted in a local database and it also goes to real-time consumption connecting to Kafka Producer API.
+
+2. Data Integration Tools: Data Integration Tools such HVR, Talend, etc. Retrieves data from existing databases with Kafka Connect Framework. Mechanismo to bring data to Apache Kafka from a variery of sources.
+
+#### Creating a Kafka Producer with Java
 
 
 
