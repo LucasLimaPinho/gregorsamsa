@@ -376,6 +376,25 @@ The leader of Partition 8 (P8) goes to Broker 1 (R1-B1) - third in the ordered l
 
 The leader of Partition 9 (P9) goes to Broker 4 (R2-B4) - fourth in the ordered list since we only have 6 brokers; less than the number of partitions leaders;
 
+Once the leader partitions are allocated with the ordered list, the followers start to be allocated. It starts creating the first follower that will be allocated in the **second** broker in the list following a round robin rule.
+
+The first follower of Partition 0 (P0) will be allocated in Broker 3 (R2-B3) - the second broker in the ordered list;
+
+The first follower of Partition 1 (P1) goes to Broker 1 (R1-B1) - the third broker in the ordered list; So it follows ...
+
+Finnaly it starts allocating the second follower of each partition (--replication-factor 3). It maps them to the same broker list by jumping one more broker from the previous start.
+
+The second follower of Partition 0 (P0) goes to Broker 1 (R1-B1) - the **third** broker in the ordered list.
+
+Brokers In Ordered List | Leaders | Followers | Followers
+----------------------- | ------- | --------- | ---------
+R1-B0 | P0, P6 | P5 | P4
+R2-B3 | P1, P7 | P0, P6 | P5
+R1-B1 | P2, P8 | P1, P7 | P0, P6
+R2-B4 | P3, P9 | P2, P8 | P1, P7
+R1-B2 | P4     | P3, P9 | P2, P8
+R2-B5 | P5     | P4     | P3, P9
+
 
 
 
