@@ -305,6 +305,12 @@ get /controller
 
 ~~~
 
+If a broker that is a controller dies and then gets back again, he will not reassume the role as controller. The ephemeral node in Zookeeper will be already occupied by another broker and when he tries to create that ephemeral node, he will get a exception "node already exists". Someone else is already elected as a controller.
+
+Summarizing: Zookeeper is the database of the Kafka Cluster control information and one of the broker is elected to take the responsibilies as a controller to monitor Zookeeper. The controller maintains his activities of a normal broker.
+
+#### Kafka Work Distribution Architecture 
+
 
 
 
