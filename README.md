@@ -579,6 +579,8 @@ public class HelloProducer {
             producer.send(new ProducerRecord<>(AppConfigs.topicName, i, "Simple String Message -" + i));
 
     }
+    
+    producer.close()
         
 ~~~
 
