@@ -37,6 +37,10 @@ public class PosValidator {
         KafkaConsumer<String, PosInvoice> consumer = new KafkaConsumer<>(consumerProps);
         consumer.subscribe(Arrays.asList(AppConfigs.sourceTopicNames));
 
+        // The Producer needs to be created because we want to the send the VALIDA & INVALID INVOICES
+        // to different topicNames.
+
+
         Properties producerProps = new Properties();
         producerProps.put(ProducerConfig.CLIENT_ID_CONFIG, AppConfigs.applicationID);
         producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, AppConfigs.bootstrapServers);
@@ -45,19 +49,28 @@ public class PosValidator {
 
         KafkaProducer<String, PosInvoice> producer = new KafkaProducer<>(producerProps);
 
+        // Infinite loop for reading messages from a topic that is subscribed.
         while (true) {
+
+            // After subscribing to the topics, the consumer can start making request for message records by making a call to the poll() method.
+            // The poll() method will immediately return an Iterable ConsumerRecords.
+            // If there are no records at the Broker, it will wait for a TimeOut()
+
+            // Here the timeout is passed as a param to the consumer.poll() method ---> Duration.ofMillis(100)
+            // If the timeout expires, an ampty ConsumerRecords<> will be returned.
+
             ConsumerRecords<String, PosInvoice> records = consumer.poll(Duration.ofMillis(100));
             for (ConsumerRecord<String, PosInvoice> record : records) {
                 if (record.value().getDeliveryType().equals("HOME-DELIVERY") &&
-                    record.value().getDeliveryAddress().getContactNumber().equals("")) {
+                        record.value().getDeliveryAddress().getContactNumber().equals("")) {
                     //Invalid
                     producer.send(new ProducerRecord<>(AppConfigs.invalidTopicName, record.value().getStoreID(),
-                        record.value()));
+                            record.value()));
                     logger.info("invalid record - " + record.value().getInvoiceNumber());
                 } else {
                     //Valid
                     producer.send(new ProducerRecord<>(AppConfigs.validTopicName, record.value().getStoreID(),
-                        record.value()));
+                            record.value()));
                     logger.info("valid record - " + record.value().getInvoiceNumber());
                 }
             }
