@@ -839,7 +839,7 @@ Transactions are dependent on idempotence.
 
 **Retrieving messages from 2 topics with the same command-line using --whitelist**
 
-~~~cmd
+~~~sh
 
 kafka-console-consumer.bat --bootstrap-server localhost:9092 --from-beginning --whitelist "hello-producer-1|hello-producer-2"
 
