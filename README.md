@@ -808,6 +808,24 @@ public class DispatcherDemo {
             dispatchers[i] = new Thread(new Dispatcher(producer,
                     AppConfigs.topicName,
                     AppConfigs.eventFiles[i]));
+                                // Start the thread.
+            dispatchers[i].start();
+        }
+
+        try {
+
+            // Loop through the Thread handles and join them together.
+            // This join will allow the MAIN THREAD to wait for all the threads to complete
+            for (Thread t : dispatchers) t.join();
+        } catch(InterruptedException e) {
+            logger.error("Main Thread interrupted");
+
+        } finally {
+            producer.close();
+            logger.info("Finished dispatcher demo");
+        }
+
+    }
 
         }
 
