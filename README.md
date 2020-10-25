@@ -1310,4 +1310,7 @@ Initial assignment of partitions to the Tasks never changes hence the number of 
 What happens if an active instance dies or goes down? The fault-tolerance is straight-forward. If a task runs on a machine that fails, Kafka Streams automatically reassign that Task to one of the remaining running instances. 
 
 
+#### How do kafka Streams API remembers some information from the past?** https://www.udemy.com/course/kafka-streams-real-time-stream-processing-master-class/learn/lecture/14243904#overview
+
+
 
