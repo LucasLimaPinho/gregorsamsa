@@ -825,6 +825,8 @@ public class DispatcherDemo {
 
 ~~~
 
+We can set the number of Producer Threads via Command-line Tool. 
+
 #### Advanced Kafka Producer
 
 **Idempotent Producer**
@@ -844,6 +846,122 @@ Transactions are dependent on idempotence.
 kafka-console-consumer.bat --bootstrap-server localhost:9092 --from-beginning --whitelist "hello-producer-1|hello-producer-2"
 
 ~~~
+
+#### Other Kafka Producer Concepts
+
+1. Synchronous Send: Default Kafka Producer API is asynchronous and non-blocking - you can lose some messages. In real-use cases, the rate of lost messages is around 1-2%. 
+
+What to do with the failure records? The send() method is asynchronous and returns immediaely withou waiting for the acknowledgment of the broker. 
+
+First approacho: Use a get() method with the producer.send() method. The get() method is synchronous and **blocking**. So it will make the send() method wait for the acknowledgement. If it does not receive, it will throw an Exception. In case of sucess, will return the metadata.
+
+~~~java
+
+# This approach makes your send() method become a synchronous call.
+# Allows you to take an action that you want to take in case of failure.
+# This is achievale for scenarios where your message are produced in a slower pace.
+
+metadata = producer.send(new ProducerRecord<> (AppConfigs.topicName, i, "Simple Message " + i)).get()
+
+~~~
+
+Second Approach: **Producer Callback**
+
+Important approach when a lot of messages, while the first approach is suitable for messages produced in a slower pace. The asynchronous send() method is way more efficient since it allows grouping messages and optimize network roundtrips to achieve better throughput.
+
+To handle high throughput cases, the Kafka Producer API provides you the **Producer Callback**. 
+
+
+2. **Producer Callback**: high throughput and also knowing which messages failed to deliver. 
+
+~~~java
+
+// Callback Method -> LoggingCallBack
+
+package guru.learningjournal.kafka.examples;
+
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.IntegerSerializer;
+import org.apache.kafka.common.serialization.StringSerializer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Properties;
+
+public class CallbackHelloProducer {
+    private static final Logger logger = LogManager.getLogger();
+
+    public static void main(String[] args) throws InterruptedException {
+
+        logger.trace("Creating Kafka Producer...");
+        Properties props = new Properties();
+        props.put(ProducerConfig.CLIENT_ID_CONFIG, AppConfigs.applicationID);
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, AppConfigs.bootstrapServers);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        //We want to raise an exception - So, do not retry.
+        props.put(ProducerConfig.RETRIES_CONFIG, 0);
+        //We want to raise an exception - So, take acknowledgement only when message is persisted to all brokers in ISR
+        props.put(ProducerConfig.ACKS_CONFIG, "all");
+        /*
+            Follow below steps to generate exception.
+            1. Start three node cluster
+            2. Create topic with --config min.insync.replicas=3
+            3. Start producer application
+            4. Shutdown one broker while producer is running - It will cause NotEnoughReplicasException
+        */
+
+        KafkaProducer<Integer, String> producer = new KafkaProducer<>(props);
+        for (int i = 1; i <= AppConfigs.numEvents; i++) {
+            Thread.sleep(1000);
+            String message = "Simple Message-" + i;
+            producer.send(new ProducerRecord<>(AppConfigs.topicName, i, message),
+                new LoggingCallback(message));
+        }
+        logger.info("Finished Application - Closing Producer.");
+        producer.close();
+    }
+}
+
+
+// Here is the LoggingCallBack.class that will generate the object
+
+package guru.learningjournal.kafka.examples;
+
+import org.apache.kafka.clients.producer.Callback;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.sql.Timestamp;
+
+public class LoggingCallback implements Callback {
+    private static final Logger logger = LogManager.getLogger();
+    private String message;
+
+    public LoggingCallback(String message){
+        this.message=message;
+    }
+
+    @Override
+    public void onCompletion(RecordMetadata recordMetadata, Exception e) {
+        if(e !=null){
+            logger.error("Error sending message string = " + message);
+        }else {
+            logger.info(message + " persisted with offset " + recordMetadata.offset()
+                + " and timestamp on " + new Timestamp(recordMetadata.timestamp()));
+        }
+    }
+}
+
+~~~
+       
+
+3. Custom Partitioner
+
+4. Avro Serializer and Schema Registry
 
 
 
