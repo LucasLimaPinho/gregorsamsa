@@ -1077,7 +1077,7 @@ The process of constructing an application in real-time streaming using Kafka St
 
 1. Create a Java Properties object and put the necessary configuration;
 
-2. Defining Streams Computational Logic - the heart of the Kafka Streaming API application. 
+2. Defining Streams Computational Logic - create a Topology - the heart of the Kafka Streaming API application. 
 
 We want to use Kafka DSL to define the computational logic. 
 
@@ -1087,6 +1087,38 @@ After creating a builder, you can open a Kafka Streams using the method stream()
 
 The stream() method takes a Kafka topic name and returns a **KStream object**.
 
+Create a Topology: The Kafka Streams computational logic is known as a Topology and is represented by a Topology class.
+
+The Kafka Streams computational logic is known as a Topology and is represented by a Topology class.
+
+Whatever we device as a computational logic, we can get all the bundled into a Topology object by calling the build method.
+
+3. Start the stream: Once we have the Properties and the Topology, we can instantiate the KafkaStreams object:
+
+~~~java
+
+        KafkaStreams streams = new KafkaStreams(topology, props);
+        logger.info("Starting stream.");
+        streams.start();
+        
+~~~
+
+A typical Kafka Streams application is a always-running application. So, once started, it keeps running forever until you bring it down for some maintenance reason.
+
+When you want to bring it down, you must be able to perform some clean-up activities and _gracefully_ shut down the stream.
+
+4. Add a ShutdownHook()
+
+~~~java
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("Shutting down stream");
+            streams.close();
+        }));
+        
+~~~
+
+The basic 4-steps:
 
 ~~~java
 
@@ -1133,6 +1165,14 @@ public class HelloStreams {
         kStream.foreach((k, v) -> System.out.println("Key= " + k + " Value= " + v));
         //kStream.peek((k,v)-> System.out.println("Key= " + k + " Value= " + v));
 
+
+        // The Kafka Streams computational logic is known as a Topology and is represented by a Topology class.
+        // Whatever we device as a computational logic, we can get all the bundled into a Topology object by calling the build method.
+        // What that means? Everything that we have done so far, starting from the builder.stream(), the forEach() call - all that is bundled inside a Topology object.
+        
+        // We define a series of activities for the Topology and, finally, call the build() method to get the Topology object.
+        
+        
         Topology topology = streamsBuilder.build();
         KafkaStreams streams = new KafkaStreams(topology, props);
         logger.info("Starting stream.");
