@@ -789,7 +789,31 @@ public class DispatcherDemo {
         KafkaProducer<Integer, String> producer = new KafkaProducer<Integer, String>(props);
 
     }
+    
+            // Create an instance of the producer providing the Producer Configuration with the
+        // object props from the class Properties.class
 
+        KafkaProducer<Integer, String> producer = new KafkaProducer<Integer, String>(props);
+        // Ready to create dispatcher threads. Each element of the Thread[] array will hold
+        // the handle for the Thread so I can join them to wait for their completion.
+        // The number of threads here must be equal to the number of files;
+
+        Thread[] dispatchers = new Thread[AppConfigs.eventFiles.length];
+        logger.info("Starting dispatcher threads...");
+        for (int i = 0; i < AppConfigs.eventFiles.length; i++) {
+
+            // Inside the loop: creating a new Thread using the Dispatcher constructor.
+            // All the Threads using the same producer object;
+
+            dispatchers[i] = new Thread(new Dispatcher(producer,
+                    AppConfigs.topicName,
+                    AppConfigs.eventFiles[i]));
+
+        }
+
+    }
+
+}
 }
 
 ~~~
