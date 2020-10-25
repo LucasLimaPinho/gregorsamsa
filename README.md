@@ -964,6 +964,13 @@ public class LoggingCallback implements Callback {
 
 4. Avro Serializer and Schema Registry
 
+#### Streaming Process
+
+1. Kafka Consumer API: applies to a simple and straightforward stream processing application. Does not offer everything we need for a complex application. 
+
+2. **Kafka Streams API**: real-time streaming application with a lot more tools then Consumer API. Is built on top of Kafka Producer API & Kafka Consumer API. 
+
+3. KSQL: an interactive SQL like interface for streaming process on Kafka. You can see the results in real-time on the KSQL CLI. 
 
 
 
