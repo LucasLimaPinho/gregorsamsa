@@ -1064,7 +1064,7 @@ public class PosValidator {
 
 ~~~
 
-
+When you execute the POS Simulator but does not start the Validator built with Kafka Consumer API, the messages are already there sitting on the buffer waiting to be processed. 
 
 
 
