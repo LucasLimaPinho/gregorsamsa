@@ -675,10 +675,124 @@ The other threads of the application are responsible for uncompressing the data 
 
 _It is not recommended to create various Producer Instances in the same application to handle with large number of messages per seconds. We need to leverage the Kafka Thread-Safe nature to create multiple threads in the same Producer Instance in a application._
 
+You can use kafka.properties to keep producer level configuration ouside of your code.
+
+The Runnable Interface in Java allow us to execute an instance of this class as a separate Thread. 
+
+Multi-threaded Kafka Producer:
 
 
+~~~java
+
+package guru.learningjournal.kafka.examples;
+
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.util.Scanner;
+
+public class Dispatcher implements Runnable {
+
+    private static final Logger logger = LogManager.getLogger();
+    private String fileLocation;
+    private String topicName;
+
+    // In order to send the data to a KafkaBroker we need a KafkaProducer.
+
+    private KafkaProducer<Integer, String> producer;
+
+    // All theses things will be given to the Dispatcher by the main application thread
+    // So, let's take a constructor to take these values:
+
+    Dispatcher(KafkaProducer<> producer, String topicName, String fileLocation) {
+
+        this.producer = producer;
+        this.topicName = topicName;
+        this.fileLocation = fileLocation;
 
 
+    }
+
+
+    // The Runnable Interface allow us to execute an instance of this class as a separate Thread.
+    @Override
+    public void run() {
+
+        logger.info("Starting multi-thread Kafka Producer.");
+        logger.info("Started processing " + fileLocation);
+        File file = new File(fileLocation);
+        int counter = 0;
+        try (Scanner scanner = new Scanner(file)) {
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                // producer.send() always receive a ProducerRecord with topicName, key, value
+                producer.send(new ProducerRecord<>(topicName, null, line));
+                counter++;
+            }
+            logger.info("Finished processing " + counter + "message from " + fileLocation);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+}
+
+~~~
+
+Class with main method that creates the configuration of the KafkaProducer that will run in multi-threaded mode:
+
+
+~~~java
+
+package guru.learningjournal.kafka.examples;
+
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.IntegerSerializer;
+import org.apache.kafka.common.serialization.StringSerializer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+public class DispatcherDemo {
+
+    private static final Logger logger = LogManager.getLogger();
+
+    public static void main(String[] args) {
+
+        Properties props = new Properties();
+        try {
+
+            InputStream inputStream = new FileInputStream(AppConfigs.kafkaConfigFileLocation);
+            props.load(inputStream);
+            props.put(ProducerConfig.CLIENT_ID_CONFIG, AppConfigs.applicationID);
+            props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
+            props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Create an instance of the producer providing the Producer Configuration with the
+        // object props from the class Properties.class
+        
+        KafkaProducer<Integer, String> producer = new KafkaProducer<Integer, String>(props);
+
+    }
+
+}
+
+~~~
 
 
 
