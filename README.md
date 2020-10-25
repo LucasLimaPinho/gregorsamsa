@@ -1281,4 +1281,33 @@ public class PosFanoutApp {
 ~~~
 
 
+#### Kafka Streams Architecture
+
+Kafka Streams API application run a single-threaded application by default. You can create a multi-threaded Streams application quite easily.
+
+All you have to do is to **set a configuration property**
+
+Here is the line of code that you need to add to the Properties object to make your Kafka Streams API run as multi-threaded:
+
+~~~java
+
+props.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG,3);
+
+~~~
+
+After adding this line of Code, the same applications starts running three balanced threads.
+
+Increasing the number of threads is a way of vertically scaling your application. The numbers of threads you can start is limited by the resources that are available on a single machine, that's why we call it vertical scalling. You can overcome this limitation by launching multiple instances of the same application on a different machine.
+
+Increasing the number of instances is a way of horizontally scaling your application - starting multiple instances of your application in different Computers.
+
+**What is a Stream Task?** The secret of a Stream Task is hidden behind the Topology. Creates an instance of a new Topology and provides as a Stream Task to one of the Threads that are running in the same machine (vertical scalling) and running in other machines (horizontal scalling). **The number of Stream Tasks is equal to the number of partitions of the Input Topic. If the Input Topic has different numbers of partitions, the number of Streams Tasks will be equal to the highest number of partitions of the Input Topics (case of multiple Topics) **.
+
+Every Task can have multiple partitions to process - the partitions are evenly distributed throughout the tasks that have a fixed number based on the input Topology.
+
+Initial assignment of partitions to the Tasks never changes hence the number of tasks if fixed and **is the maximum possible degree of parallelism for the application**. 
+
+What happens if an active instance dies or goes down? The fault-tolerance is straight-forward. If a task runs on a machine that fails, Kafka Streams automatically reassign that Task to one of the remaining running instances. 
+
+
 
