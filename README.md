@@ -835,6 +835,15 @@ Setting enable.idempotence = true will help you that messages are not going to b
 
 Goes one ste further then the _idempotent Kafka Producer_ and provides the transactional guarantee, i.e, the **ability to write to several partitions atomically**. 
 
+Transactions are dependent on idempotence.
+
+**Retrieving messages from 2 topics with the same command-line using --whitelist**
+
+~~~
+
+kafka-console-consumer.bat --bootstrap-server localhost:9092 --from-beginning --whitelist "hello-producer-1|hello-producer-2"
+
+~~~
 
 
 
