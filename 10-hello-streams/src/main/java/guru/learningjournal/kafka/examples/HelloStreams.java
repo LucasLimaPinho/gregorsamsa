@@ -47,6 +47,18 @@ public class HelloStreams {
         kStream.foreach((k, v) -> System.out.println("Key= " + k + " Value= " + v));
         //kStream.peek((k,v)-> System.out.println("Key= " + k + " Value= " + v));
 
+        // The Kafka Streams computational logic is known as a Topology and is represented by a Topology class.
+        // Whatever we device as a computational logic, we can get all the bundled into a Topology object by calling
+        // the build method.
+
+        // What that means? Everything that we have done so far, starting from the builder.stream(),
+        // the forEach() call - all that is bundled inside a Topology object.
+
+        // We define a series of activities for the Topology and, finally, call the build() method to
+        // get the Topology object.
+
+
+
         Topology topology = streamsBuilder.build();
         KafkaStreams streams = new KafkaStreams(topology, props);
         logger.info("Starting stream.");
