@@ -785,13 +785,6 @@ public class DispatcherDemo {
 
         // Create an instance of the producer providing the Producer Configuration with the
         // object props from the class Properties.class
-        
-        KafkaProducer<Integer, String> producer = new KafkaProducer<Integer, String>(props);
-
-    }
-    
-            // Create an instance of the producer providing the Producer Configuration with the
-        // object props from the class Properties.class
 
         KafkaProducer<Integer, String> producer = new KafkaProducer<Integer, String>(props);
         // Ready to create dispatcher threads. Each element of the Thread[] array will hold
@@ -808,7 +801,7 @@ public class DispatcherDemo {
             dispatchers[i] = new Thread(new Dispatcher(producer,
                     AppConfigs.topicName,
                     AppConfigs.eventFiles[i]));
-                                // Start the thread.
+            // Start the thread.
             dispatchers[i].start();
         }
 
@@ -817,7 +810,7 @@ public class DispatcherDemo {
             // Loop through the Thread handles and join them together.
             // This join will allow the MAIN THREAD to wait for all the threads to complete
             for (Thread t : dispatchers) t.join();
-        } catch(InterruptedException e) {
+        } catch (InterruptedException e) {
             logger.error("Main Thread interrupted");
 
         } finally {
@@ -827,14 +820,12 @@ public class DispatcherDemo {
 
     }
 
-        }
-
-    }
-
 }
-}
+
 
 ~~~
+
+#### Advanced Kafka Producers
 
 
 
