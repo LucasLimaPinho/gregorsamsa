@@ -26,8 +26,24 @@ public class HelloStreams {
         props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
         props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
 
+        /* 2. Defining Streams Computational Logic - the heart of the Kafka Streaming API application.
+
+                We want to use Kafka DSL to define the computational logic.
+
+        The first step is to create a StreamBuilder object.
+
+                After creating a builder, you can open a Kafka Streams using the method stream().
+
+                The stream() method takes a Kafka topic name and returns a **KStream object**.
+
+        */
+
+
         StreamsBuilder streamsBuilder = new StreamsBuilder();
         KStream<Integer, String> kStream = streamsBuilder.stream(AppConfigs.topicName);
+
+        // The KStream class provides a bunch of methods for you to build your computational logic.
+
         kStream.foreach((k, v) -> System.out.println("Key= " + k + " Value= " + v));
         //kStream.peek((k,v)-> System.out.println("Key= " + k + " Value= " + v));
 
