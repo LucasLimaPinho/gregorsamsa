@@ -1191,5 +1191,9 @@ Why do we need Serdes for a Stream API? The answer is straightforward. This exam
 
 The Kafka Streams API takes a **Serdes Approach** for the Key/Value. Instead of specifying two configurations at all of the time, let's define both at onde.
 
+The core of your Kafka Streams application is the Topology of your application. 
+
+#### Creating a Kafka Streams application Topology
+
 
 
