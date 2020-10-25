@@ -1028,8 +1028,22 @@ public class PosValidator {
 
         KafkaProducer<String, PosInvoice> producer = new KafkaProducer<>(producerProps);
 
+        // Infinite loop for reading messages from a topic that is subscribed. 
+        
         while (true) {
+        
+        // After subscribing to the topics, the consumer can start making request for message records by making a call to the poll() method.
+        // The poll() method will immediately return an Iterable ConsumerRecords.
+        // If there are no records at the Broker, it will wait for a TimeOut()
+        
+        // Here the timeout is passed as a param to the consumer.poll() method ---> Duration.ofMillis(100)
+        // If the timeout expires, an ampty ConsumerRecords<> will be returned.
+        
+        
             ConsumerRecords<String, PosInvoice> records = consumer.poll(Duration.ofMillis(100));
+            
+            // Now we can perform our validations inside the loop.
+            
             for (ConsumerRecord<String, PosInvoice> record : records) {
                 if (record.value().getDeliveryType().equals("HOME-DELIVERY") &&
                     record.value().getDeliveryAddress().getContactNumber().equals("")) {
