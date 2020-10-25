@@ -825,8 +825,15 @@ public class DispatcherDemo {
 
 ~~~
 
+#### Advanced Kafka Producer
+
+**Idempotent Producer**
+
 Setting enable.idempotence = true will help you that messages are not going to be lost neither you will have duplicate messages. However, you must always remember one thing: if you are sending duplicate messages from the Application Level, this configuration will not save you from have duplicates. It only saves you from duplicates due to the retries performed by I/O thread in case of failure to receive acknowledgment from the Broker. (Idempotence uses unique ID per producer and message sequency number).
 
+**Transactional Producer**
+
+Goes one ste further then the _idempotent Kafka Producer_ and provides the transactional guarantee, i.e, the **ability to write to several partitions atomically**. 
 
 
 
