@@ -1067,7 +1067,68 @@ public class PosValidator {
 When you execute the POS Simulator but does not start the Validator built with Kafka Consumer API, the messages are already there sitting on the buffer waiting to be processed. 
 
 
+### Kafka Streams API
 
+Kafka Streams API is highly-configurable as Kafka Producer API. It provides a lot more feature to handle the complexity of real-time streaming then the Kafka Consumer API.
+
+ Build HelloStreams.class to consume the data generated from the KafkaProducer HelloProducer.class. Kafka Stream API is a highly-configurable API just like Kafka Producer API. So we need to create a Properties.class object to pass it to the KafkaStream<Integer, PosInvoice> (propsStream);
+
+The process of constructing an application in real-time streaming using Kafka Streams API is based in **4 (four)** steps:
+
+1. Create a Java Properties object and put the necessary configuration;
+
+~~~java
+
+package guru.learningjournal.kafka.examples;
+
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.KafkaStreams;
+import org.apache.kafka.streams.StreamsBuilder;
+import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.Topology;
+import org.apache.kafka.streams.kstream.KStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Properties;
+
+public class HelloStreams {
+    private static final Logger logger = LogManager.getLogger(HelloProducer.class);
+
+    public static void main(String[] args) {
+        Properties props = new Properties();
+        
+        // Every Kafka Stream application must be identified with a unique id
+        // All instances of the same application must have the same applicationID
+        
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG, AppConfigs.applicationID);
+        
+        // A bootstrap_server configuration is a comma separated list of host/port pairs that streams application would use to establish the initial
+        // connection with Kafka Cluster
+        
+        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, AppConfigs.bootstrapServers);
+        
+        props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
+        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+
+        StreamsBuilder streamsBuilder = new StreamsBuilder();
+        KStream<Integer, String> kStream = streamsBuilder.stream(AppConfigs.topicName);
+        kStream.foreach((k, v) -> System.out.println("Key= " + k + " Value= " + v));
+        //kStream.peek((k,v)-> System.out.println("Key= " + k + " Value= " + v));
+
+        Topology topology = streamsBuilder.build();
+        KafkaStreams streams = new KafkaStreams(topology, props);
+        logger.info("Starting stream.");
+        streams.start();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("Shutting down stream");
+            streams.close();
+        }));
+    }
+}
+
+~~~
 
 
 
