@@ -1196,4 +1196,33 @@ The core of your Kafka Streams application is the Topology of your application.
 #### Creating a Kafka Streams application Topology
 
 
+Adding a new processor node is as simples as calling a transformation method on the **KStream Object**.
+
+Code-snippet:
+
+~~~java
+
+KStream.foreach((k,v) -> System.out.println("Key =" + k + "Value = " + v));
+
+~~~
+
+You can use the KStream transformation methods to create a DAG of processor nodes in a more sophisticated topology.
+
+The KStream class is an abstraction of a stream Kafka message records and supports a variety of transformation operations:
+
+* filter() -> returns KStream
+* map() -> returns KStream
+* flatmap() -> returns KStream
+* foreach() - void
+* to() - void
+
+
+Some KStream operations may return one or more KStream objects -> we can create a **chain of processing nodes**.
+
+foreach() and to() do not create another KStream object. These transformations are known as a **terminating or sink processor**.
+
+Since they do not return a Kstream object, they are used at the terminal end of your processor topology.
+
+
+
 
