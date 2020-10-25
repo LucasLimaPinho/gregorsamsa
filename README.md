@@ -874,6 +874,8 @@ To handle high throughput cases, the Kafka Producer API provides you the **Produ
 
 2. **Producer Callback**: high throughput and also knowing which messages failed to deliver. 
 
+Using the Producer Callback implemented in the code bellow, the send() method returns immediately, but the internal I/O thread will call the CallBack Method (LoggingCallBack - that can also be a lamda expression) when the acknowledgment arrives. You can take necessary action in your lamda expression or callback method. 
+
 ~~~java
 
 // Callback Method -> LoggingCallBack
@@ -956,8 +958,7 @@ public class LoggingCallback implements Callback {
     }
 }
 
-~~~
-       
+~~~       
 
 3. Custom Partitioner
 
