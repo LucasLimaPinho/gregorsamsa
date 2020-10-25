@@ -586,5 +586,110 @@ public class HelloProducer {
 ~~~
 
 
+#### Some Internals of Kafka Producer API
+
+We pack the message into the ProducerRecord object that has to have at least two fiels: "Topic" & "Message Value".
+
+Kafka Topic Name is the destination address of the message;
+
+The message key is one of the most critical argument: it is used for many purposes such as partitioning, grouping and joining.
+
+The ProducerRecord wraps your information with all necessary information such as topic name, key & timestamp.
+
+Every record goes through **serialization, partitioning and then goes to a buffer** before sending it to the Kafka Broker. The serialization is necessary to send the message over the network. Without serialization of data you cannot transmit it to a remote location. That's why is necessary to configure KEY SERIALIZAITON AND VALUE SERIALIZATION in Kafka Producer configuration - Kafka does not know how to serialize your data to transmit through the network. 
+
+You have a choice to create custom serializer, but the Kafka Producer API already provides you with some serializers like Avro, JSON, etc.
+
+Every Kafka Producer object needs to have a Topic Name configured. Also, topics are partitioned and the Kafka Producer needs to decide to which partition it will send the message. 
+
+There are two approaches to specify the **target partition number for the message**
+
+1. Set partition number on the argument in the ProducerRecord object in Java - this approach is rarely used;
+
+2. Supply a Partitioner.class to determine the partition number at Runtime;
+
+You can specifier a **custom Partitioner** using the object properties. This is oftenly not needed because Kafka Producer API comes with a **default partitioner** which is the most commonly used paritioner.
+
+The default partitioner takes on the two approaches:
+
+1. Hash Key Partitioning - based on the message key; Hash the key to convert to a numeric value; Hashing algorithm on the key to the determine the partitions number for the message; This hashing ensures that all messages with the same key goes to the same partition; This hashing algorithm needs the number of partitions as an input - so we can have a problem if the number of partitions in your production environment increases and you don't update your application; You can easily over provision the number of partitions in your topic; You can easily provide 25% partitions than you need for a topic; There is no much harm in taking this approach;
+
+2. Round Robin Partitioning - default when the message key is null. Rou robin algorithm to achieve an equal distribution among the available partitions. It means the first message goes to one partition, the second message goes to another partitions and the process goes on & repeats in a loop. This is the most used partitioning strategy in Kafka.
+
+Every message in Kafka is automatically timestamped, even you dont explicitly specify it. For the timestamp creation in Kafka, it used two strategies
+
+1. CreateTime: the time when the message was produced. 
+
+2. LogAppendTime: the time when the message was received by the Kafka Broker. 
+
+You cannot use both "CreateTime" & "LogAppendTime" strategies to create a timestamp for the messages in Kafka. Your application must decide between these two timestamping methods while **creating the topic**. 
+
+- message.timestamp.type = 0 ----------------> CreateTime timestamp strategy defined for the topic
+
+- message.timestamp.type = 1 -----------------> LogAppendTime timestamp stragety defined for the topic
+
+The default value is 0 (zero) - CreateTime of the message.
+
+The message will always have a timestamp - even the ProducerTime or a broker time that overrides the producer time when the developer targets the message.timestamp.type =1;
+
+When we are using another tool to bring data into Kafka, it is import to set the LogAppendTime because we need to make sure that the broker is setting a timestamp to the message even if the tool used to brig data into Kafka fails;
+
+Once serialized and assigned a partition number to it, the message goes to sit in a buffer inside the Kafka Producer API waiting to be transmitted. The ProducerObject consists of a partition-wise buffer space that holds the record that haven't yet been sent to the server. 
+
+**Producer also runs a background I/O thread that is responsible for TURNING THESE RECORDS INTO REQUESTS and transfering them to the cluster. **
+
+**I/O Thread in Kafka Producer API**: turn messages (that already have a timestamp and partition number) that are sitting in a buffer space into requests. How you can see, Kafka Producer API has a buffer space, thats why it is important to close the producer with producer.close();
+
+**Why Buffering messages in Kafka Producer API?**: Designed to offer two advantages.
+
+1. Asynchronous: That means the send method will always add the message to the buffer and return without blocking. Those records are then transmitted by the background thread. The arrangement is quite convincing as your send() method is not delayed for the network operation.
+
+2. Network Optimization:  Buffering method also allows to provide combining messages from the same buffer and transmit them together as a single packet to achieve better thoughput.
+
+There is a critical consideration here: if the records are posted faster that they can be transmitted to the server, then this buffer space is exhausted and your next send() method will block for few milliseconds until the buffer is freed by the I/O thread.
+
+If the I/O takes too long to release the buffer, then your send method will throw a TimeOutException. When you are seeing this TimeOutExceptions, you may want to increase your PRODUCERMEMORY. The default producer memory is 32 MB. You can expand the total memory allocated to the buffer by setting buffer.memory producer configuration.
+
+How to set this configurations values that we have seen so far - memory.buffer & message.timestamp.type??? The buffer.memory is a producer configuration so you can set it the properties object. 
+
+message.timestamp.type is a topic configuration and you can set it while creating a topic in the command line tool. 
+
+The producer I/O background thread is responsible for sending the serialized messages that are waiting in the topic partition buffer. Broker returns a successful message to acknowledge that the message was received. You can set the number of retries of the Producer API in the producer configuration - it is important to have in mind that the send() method only sends the message to the Kafka Producer API.
+
+Flux: send() sends to the Kafka Producer API -----> Serialization ---------> Partitions Number decision based on Hash Key ALgorithm or Round Robin Algorithm ----------> background I/O thread to send messages that are sitting in the buffer to the Broker. We have some network optimization sending messages in a packet when they come from the same buffer ---------> Check if receives an acknowledgement message ---------> Retries based on the number of retries configuration -----> If successful, Broker saves the message into a log file.
+
+#### Scaling Kafka Producers
+
+
+Scaling a Kafka application is straightforward. You have hundreds of producers sending events in parallel, you may want to increase the number of brokers in your Kafka cluster.
+
+You can have a linear scalability where you simply can add more producers and samples. You can also scale a single producer making use of **Threads in Parallel**.
+
+A single producer thread is good enough to support the use cases where data is being produced at a reasonable pace. However, some scenarios may require parallelism at the individual level as well. You can handle such requirements using **multithreaded Kafka Producers***.
+
+Basically, the main thread receives hundreds of thousands of messages per second and reads the data packet as they arrive. The main thread immediately handovers the data packet to a different thread for sending the data to the Kafka broker. The main thread again starts reading the next packet of data. 
+
+The other threads of the application are responsible for uncompressing the data packet, reading individual message from the packet, serialize the data, define the topic partition number based on Hash Key algorithm or Round Robin algorithm, sit the messages on a buffer (messages with same key using Hash Key algorithm will be put in the same partition). The background I/O thread is responsible for sending the message though the network with Network Throughput Optimization. 
+
+**Kafka Multithreaded Process is Thread-Safe**: it means your application can share the same producer object across multiple threads and send messages in parallel using the same producer instance.
+
+_It is not recommended to create various Producer Instances in the same application to handle with large number of messages per seconds. We need to leverage the Kafka Thread-Safe nature to create multiple threads in the same Producer Instance in a application._
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
