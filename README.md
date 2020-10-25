@@ -1077,6 +1077,17 @@ The process of constructing an application in real-time streaming using Kafka St
 
 1. Create a Java Properties object and put the necessary configuration;
 
+2. Defining Streams Computational Logic - the heart of the Kafka Streaming API application. 
+
+We want to use Kafka DSL to define the computational logic. 
+
+The first step is to create a StreamBuilder object.
+
+After creating a builder, you can open a Kafka Streams using the method stream().
+
+The stream() method takes a Kafka topic name and returns a **KStream object**.
+
+
 ~~~java
 
 package guru.learningjournal.kafka.examples;
@@ -1108,11 +1119,17 @@ public class HelloStreams {
         
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, AppConfigs.bootstrapServers);
         
+        // Serdes combines a serializer and a de-serializer. 
+        // Serdes is a factory-class
+        // 
         props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
         props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
 
         StreamsBuilder streamsBuilder = new StreamsBuilder();
         KStream<Integer, String> kStream = streamsBuilder.stream(AppConfigs.topicName);
+        
+         // The KStream class provides a bunch of methods for you to build your computational logic.
+         
         kStream.foreach((k, v) -> System.out.println("Key= " + k + " Value= " + v));
         //kStream.peek((k,v)-> System.out.println("Key= " + k + " Value= " + v));
 
@@ -1130,6 +1147,9 @@ public class HelloStreams {
 
 ~~~
 
+Why do we need Serdes for a Stream API? The answer is straightforward. This example is a data consuming streaming API. We read a stram and print it. So, internally, we need a combination of serialization & de-serialization. 
+
+The Kafka Streams API takes a **Serdes Approach** for the Key/Value. Instead of specifying two configurations at all of the time, let's define both at onde.
 
 
 
